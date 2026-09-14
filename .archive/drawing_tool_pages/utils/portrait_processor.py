@@ -17,9 +17,6 @@ from . import landmark_indices
 CANONICAL_OBJ_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "test", "canonical_face_model.obj")
 )
-CANONICAL_HEAD_OBJ_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "test", "canonical_head_model.obj")
-)
 
 MODEL_TASK_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "utils", "face_landmarker.task")
