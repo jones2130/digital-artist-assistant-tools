@@ -2,19 +2,21 @@
 import '../styles/global.css';
 import { AppTabs } from '../components/AppTabs';
 
-const basePath = import.meta.env.BASE_URL || '';
+const rawBasePath = import.meta.env.BASE_URL || '/';
+const basePath = rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`;
+const faviconUrl = `${basePath}favicon.svg`;
 ---
 
 <html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href={`${basePath}/favicon.svg`} />
+    <link rel="icon" type="image/svg+xml" href={faviconUrl} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>🎨 3D Studio & Artist Reference Generator</title>
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen">
-    <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col gap-6">
+    <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col gap-6">
       {/* Header */}
       <header class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -43,4 +45,3 @@ const basePath = import.meta.env.BASE_URL || '';
     </div>
   </body>
 </html>
-
