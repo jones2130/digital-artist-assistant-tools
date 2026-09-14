@@ -1,5 +1,12 @@
+"""
+3D Mesh Generation & File Export Utilities.
+Provides procedural geometry builders, color assignment, and subtle GLB material post-processing.
+"""
+
 import os
 import tempfile
+import struct
+import json
 import numpy as np
 import trimesh
 
@@ -43,7 +50,7 @@ def create_cylinder(radius=1.0, height=2.0, sections=32, color="#10b981"):
     return apply_color(mesh, color)
 
 
-def create_cone(radius=1.0, height=2.0, sections=32, color="#f59e0b"):
+def create_cone(radius=1.0, height=2.0, sections=32, color="#f5e6d3"):
     """Generate a cone mesh."""
     mesh = trimesh.creation.cone(radius=radius, height=height, sections=int(sections))
     return apply_color(mesh, color)
@@ -60,44 +67,72 @@ def create_torus(major_radius=2.0, minor_radius=0.5, major_sections=32, minor_se
     return apply_color(mesh, color)
 
 
-def create_mobius(strip_width=0.5, num_turns=1, res_u=100, res_v=20, color="#ec4899"):
-    """Generate a Möbius strip parametric surface."""
-    u = np.linspace(0, 2 * np.pi * num_turns, int(res_u))
-    v = np.linspace(-strip_width / 2.0, strip_width / 2.0, int(res_v))
-    u_grid, v_grid = np.meshgrid(u, v)
+def fix_glb_emissive(glb_bytes: bytes, emissive_rgb=[0.05, 0.04, 0.03]) -> bytes:
+    """Post-process GLB binary to set PBR studio material properties and doubleSided flag."""
+    try:
+        magic, version, total_len = struct.unpack("<III", glb_bytes[:12])
+        chunk_len, chunk_type = struct.unpack("<II", glb_bytes[12:20])
+        json_bytes = glb_bytes[20 : 20 + chunk_len]
+        bin_bytes = glb_bytes[20 + chunk_len :]
 
-    # Parametric equations for Mobius strip
-    x = (1 + v_grid / 2.0 * np.cos(u_grid / 2.0)) * np.cos(u_grid)
-    y = (1 + v_grid / 2.0 * np.cos(u_grid / 2.0)) * np.sin(u_grid)
-    z = v_grid / 2.0 * np.sin(u_grid / 2.0)
+        gltf_data = json.loads(json_bytes.decode("utf-8"))
 
-    # Generate quad faces and convert to triangles
-    vertices = np.column_stack((x.flatten(), y.flatten(), z.flatten()))
-    faces = []
-    rows, cols = int(res_v), int(res_u)
+        # Remove unlit extension if present so Three.js renders 3D PBR vertex normal lighting
+        if "extensionsUsed" in gltf_data and "KHR_materials_unlit" in gltf_data["extensionsUsed"]:
+            gltf_data["extensionsUsed"].remove("KHR_materials_unlit")
 
-    for i in range(rows - 1):
-        for j in range(cols - 1):
-            p1 = i * cols + j
-            p2 = p1 + 1
-            p3 = (i + 1) * cols + j
-            p4 = p3 + 1
-            faces.append([p1, p2, p3])
-            faces.append([p2, p4, p3])
+        if "materials" in gltf_data:
+            for mat in gltf_data["materials"]:
+                mat["doubleSided"] = True
+                if "extensions" in mat and "KHR_materials_unlit" in mat["extensions"]:
+                    del mat["extensions"]["KHR_materials_unlit"]
+                if "pbrMetallicRoughness" in mat:
+                    mat["pbrMetallicRoughness"]["baseColorFactor"] = [1.0, 1.0, 1.0, 1.0]
+                    mat["pbrMetallicRoughness"]["roughnessFactor"] = 0.45
+                    mat["pbrMetallicRoughness"]["metallicFactor"] = 0.0
+                mat["emissiveFactor"] = emissive_rgb
+        else:
+            gltf_data["materials"] = [
+                {
+                    "pbrMetallicRoughness": {
+                        "baseColorFactor": [1.0, 1.0, 1.0, 1.0],
+                        "roughnessFactor": 0.45,
+                        "metallicFactor": 0.0,
+                    },
+                    "emissiveFactor": emissive_rgb,
+                    "doubleSided": True,
+                }
+            ]
 
-    mesh = trimesh.Trimesh(vertices=vertices, faces=np.array(faces))
-    return apply_color(mesh, color)
+        new_json_bytes = json.dumps(gltf_data).encode("utf-8")
+        padding = (4 - (len(new_json_bytes) % 4)) % 4
+        new_json_bytes += b" " * padding
 
+        new_chunk_len = len(new_json_bytes)
+        new_total_len = 12 + 8 + new_chunk_len + len(bin_bytes)
+
+        new_header = struct.pack("<III", magic, version, new_total_len)
+        new_chunk_header = struct.pack("<II", new_chunk_len, chunk_type)
+
+        return new_header + new_chunk_header + new_json_bytes + bin_bytes
+    except Exception as e:
+        print(f"Warning: GLB emissive post-processing fallback: {e}")
+        return glb_bytes
+
+
+import uuid
 
 def export_mesh_to_file(mesh: trimesh.Trimesh, fmt: str = "glb") -> str:
-    """Export a trimesh mesh to a file (default GLB) and return the file path."""
-    filename = f"mesh_{id(mesh)}.{fmt}"
+    """Export a trimesh mesh to a file (default GLB) with subtle studio material post-processing."""
+    unique_id = uuid.uuid4().hex[:12]
+    filename = f"mesh_{unique_id}.{fmt}"
     filepath = os.path.join(TEMP_DIR, filename)
 
     if fmt in ["glb", "gltf"]:
-        # Export scene containing mesh to retain materials/colors in GLTF/GLB format
         scene = trimesh.Scene(mesh)
         data = scene.export(file_type=fmt)
+        if isinstance(data, bytes):
+            data = fix_glb_emissive(data, emissive_rgb=[0.02, 0.02, 0.02])
         with open(filepath, "wb") as f:
             f.write(data)
     elif fmt == "obj":
@@ -134,4 +169,3 @@ def get_mesh_info(mesh_or_path) -> dict:
         "bounds_max": [round(float(v), 3) for v in bounds[1]],
         "dimensions": [round(float(v), 3) for v in dimensions],
     }
-
