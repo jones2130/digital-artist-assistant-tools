@@ -50,7 +50,7 @@ export const PhotoHeadStudio: React.FC<PhotoHeadStudioProps> = ({ basePath = '' 
 
   const [faceColor, setFaceColor] = useState<string>('#f4e6d3');
   const [loomisColor, setLoomisColor] = useState<string>('#facc15');
-  const [reillyColor, setReillyColor] = useState<string>('#38bdf8');
+  const [reillyColor, setReillyColor] = useState<string>('#38f872');
   const [exportFmt, setExportFmt] = useState<'GLB' | 'OBJ' | 'STL'>('GLB');
 
   // Mesh & Scene State
