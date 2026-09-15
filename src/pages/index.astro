@@ -19,13 +19,22 @@ const faviconUrl = `${basePath}favicon.svg`;
     <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col gap-6">
       {/* Header */}
       <header class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div class="flex items-center">
-          <img class="logo mr-10" src="images/logo-dark.svg">
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-0">
+          <img class="logo mx-auto md:mx-0 md:mr-10" src="images/logo-dark.svg" alt="Hands On Art Studio Logo">
           <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-purple-300 to-amber-300">
             🎨 3D Artist Reference Generator
           </h1>
         </div>
-        <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support us Ko-fi', '#00bcff', 'M4M51RMHTK');kofiwidget2.draw();</script> 
+
+        <a 
+          href="https://ko-fi.com/handsonartstudio" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          class="kofi-header-btn"
+        >
+          <span class="cup-icon">☕</span>
+          <span>Fuel the Dev on Ko-fi</span>
+        </a>
       </header>
 
       {/* Main Interactive App */}
@@ -38,5 +47,114 @@ const faviconUrl = `${basePath}favicon.svg`;
         Created and hosted by Hands On Art Studio
       </footer>
     </div>
+
+    {/* Tipping Modal */}
+    <div
+      id="tip-modal"
+      class="modal-backdrop"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tip-modal-title"
+    >
+      <div class="modal-card">
+        <button id="close-tip-modal" class="close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-icon">🎨 ☕</div>
+        <h3 id="tip-modal-title">Reference Saved!</h3>
+        <p>Hope this angle nails your sketch. This tool is independent and 100% free with no ads. If it saved you time, consider tossing a buck in the jar to keep updates rolling.</p>
+        
+        <div class="modal-actions">
+          <a 
+            href="https://ko-fi.com/handsonartstudio" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="modal-kofi-btn"
+          >
+            Tip on Ko-fi
+          </a>
+          <button id="dismiss-tip-btn" class="modal-cancel-btn">Back to Drawing</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const STORAGE_KEY = 'kofi_modal_last_shown';
+      const LEGACY_STORAGE_KEY = 'kofi_modal_dismissed';
+
+      function shouldShowModal(): boolean {
+        const lastTimestampStr = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (!lastTimestampStr) return true;
+        const lastTimestamp = parseInt(lastTimestampStr, 10);
+        if (isNaN(lastTimestamp)) return true;
+        return Date.now() - lastTimestamp >= SEVEN_DAYS_MS;
+      }
+
+      function triggerTipModal(force = false) {
+        if (!force && !shouldShowModal()) {
+          return;
+        }
+
+        const modal = document.getElementById('tip-modal');
+        if (modal) {
+          modal.classList.add('active');
+          modal.setAttribute('aria-hidden', 'false');
+          const nowStr = Date.now().toString();
+          localStorage.setItem(STORAGE_KEY, nowStr);
+          localStorage.setItem(LEGACY_STORAGE_KEY, nowStr);
+        }
+      }
+
+      function hideModal() {
+        const modal = document.getElementById('tip-modal');
+        if (modal) {
+          modal.classList.remove('active');
+          modal.setAttribute('aria-hidden', 'true');
+          const nowStr = Date.now().toString();
+          localStorage.setItem(STORAGE_KEY, nowStr);
+          localStorage.setItem(LEGACY_STORAGE_KEY, nowStr);
+        }
+      }
+
+      function setupModal() {
+        const modal = document.getElementById('tip-modal');
+        const closeBtn = document.getElementById('close-tip-modal');
+        const dismissBtn = document.getElementById('dismiss-tip-btn');
+
+        if (closeBtn) closeBtn.addEventListener('click', hideModal);
+        if (dismissBtn) dismissBtn.addEventListener('click', hideModal);
+
+        // Light dismiss: clicking on backdrop outside modal card
+        if (modal) {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              hideModal();
+            }
+          });
+        }
+
+        // Close on Escape key
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modal?.classList.contains('active')) {
+            hideModal();
+          }
+        });
+
+        // Listen for export event
+        window.addEventListener('trigger-tip-modal', () => {
+          triggerTipModal();
+        });
+      }
+
+      // Expose globally for convenience & testing
+      (window as any).triggerTipModal = triggerTipModal;
+      (window as any).hideTipModal = hideModal;
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupModal);
+      } else {
+        setupModal();
+      }
+    </script>
   </body>
 </html>
