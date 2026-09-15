@@ -223,6 +223,13 @@ export const PhotoHeadStudio: React.FC<PhotoHeadStudioProps> = ({ basePath = '' 
     } else {
       exportSceneToSTL(sceneGroup, name);
     }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('trigger-tip-modal'));
+      if (typeof (window as any).triggerTipModal === 'function') {
+        (window as any).triggerTipModal();
+      }
+    }
   };
 
   return (
@@ -475,6 +482,7 @@ export const PhotoHeadStudio: React.FC<PhotoHeadStudioProps> = ({ basePath = '' 
           <button
             type="button"
             onClick={handleExport}
+            data-action="export-loomis"
             className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-slate-950 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all"
           >
             <Download className="w-4 h-4" /> Download 3D Reference Model ({exportFmt})
