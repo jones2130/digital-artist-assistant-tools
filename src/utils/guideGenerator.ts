@@ -157,7 +157,7 @@ export function generateGuideTubes(
   showLoomis: boolean = true,
   showReilly: boolean = true,
   loomisColor: string = '#ef4444',
-  reillyColor: string = '#3b82f6',
+  reillyColor: string = '#14bc3b',
   tubeRadius: number = 0.025
 ): THREE.Mesh[] {
   const guideMeshes: THREE.Mesh[] = [];
