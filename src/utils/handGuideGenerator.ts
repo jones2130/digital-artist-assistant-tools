@@ -45,6 +45,9 @@ export const TAPERED_FINGER_CONNECTIONS: Array<[number, number, number, number]>
 
 const MCP_JOINTS = new Set([1, 5, 9, 13, 17]);
 const TIPS = new Set([4, 8, 12, 16, 20]);
+ 
+const FINGER_BONE_BASE_WIDTH=0.20;
+const JOINT_BASE_WIDTH=0.08;
 
 /**
  * Helper to build 8-vertex tapered 3D boxy phalanx/tendon block mesh
@@ -173,8 +176,8 @@ export function generateHandMeshGroup(
   // Base dimensions scale
   const palmSpan = p5.distanceTo(p17);
   const baseDim = Math.max(2.5, palmSpan);
-  const baseWidth = baseDim * 0.28;
-  const sphereRadius = baseDim * 0.08;
+  const baseWidth = baseDim * FINGER_BONE_BASE_WIDTH;
+  const sphereRadius = baseDim * JOINT_BASE_WIDTH;
 
   const flatShading = options.shadingStyle === 'Faceted / Flat-Shaded';
 

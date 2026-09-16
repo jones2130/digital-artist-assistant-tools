@@ -48,7 +48,7 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
   const [showRings, setShowRings] = useState<boolean>(true); // Foreshortening Torus Rings
   const [showPlanes, setShowPlanes] = useState<boolean>(true); // Volumetric Palm Block & Thenar Wedge
   const [showWireframe, setShowWireframe] = useState<boolean>(false);
-  const [showLabels, setShowLabels] = useState<boolean>(true);
+  const [showLabels, setShowLabels] = useState<boolean>(false);
 
   const [jointColor, setJointColor] = useState<string>('#facc15'); // Finger joints (yellow)
   const [mcpColor, setMcpColor] = useState<string>('#f97316'); // Knuckles (orange)

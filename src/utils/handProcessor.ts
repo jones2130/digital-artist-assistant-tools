@@ -9,6 +9,9 @@ export interface HandLandmarkData {
   worldLandmarks: THREE.Vector3[];
 }
 
+const MIN_HAND_DETECTION_CONFIDENCE = 0.25;
+const MIN_HAND_TRACKING_CONFIDENCE = 0.25;
+
 export const HAND_CONNECTIONS: Array<[number, number]> = [
   // Wrist & Palm base connections
   [0, 1],
@@ -75,6 +78,8 @@ export async function initHandLandmarker(
       },
       runningMode: 'IMAGE',
       numHands: numHands,
+      minHandDetectionConfidence: MIN_HAND_DETECTION_CONFIDENCE,
+      minTrackingConfidence: MIN_HAND_TRACKING_CONFIDENCE,
     });
     currentMaxHands = numHands;
     return handLandmarkerInstance;
