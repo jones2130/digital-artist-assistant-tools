@@ -162,6 +162,16 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
       }
     }
 
+    // Center the mainGroup at origin (0, 0, 0) matching Python Three.js viewer:
+    // const box = new THREE.Box3().setFromObject(handObjRef);
+    // const center = box.getCenter(new THREE.Vector3());
+    // handObjRef.position.sub(center);
+    const box = new THREE.Box3().setFromObject(mainGroup);
+    if (!box.isEmpty()) {
+      const center = box.getCenter(new THREE.Vector3());
+      mainGroup.position.sub(center);
+    }
+
     setSceneGroup(mainGroup);
     setMetadata(getMeshInfo(mainGroup));
   };

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ConvexGeometry } from 'three-stdlib';
 import { type HandLandmarkData } from './handProcessor';
 
 export interface HandStyleOptions {
@@ -45,8 +46,6 @@ export const TAPERED_FINGER_CONNECTIONS = FINGER_CONNECTIONS_FACETED;
 
 const MCP_JOINTS = new Set([1, 5, 9, 13, 17]);
 const IP_JOINTS = new Set([2, 3, 6, 7, 10, 11, 14, 15, 18, 19]);
-const FINGER_BONE_BASE_WIDTH = 0.15;
-const JOINT_BASE_WIDTH = 0.08;
 
 /**
  * Computes a true dorsal normal invariant to handedness or mirror flips.
@@ -278,36 +277,6 @@ export function createDorsalTendon(
   return group;
 }
 
-/**
- * Creates a standard polyhedron mesh given vertices, faces, and color.
- */
-function createPolyhedronMesh(
-  vertices: THREE.Vector3[],
-  faces: number[][],
-  colorHex: string,
-  flatShading: boolean = true
-): THREE.Mesh {
-  const positions: number[] = [];
-  faces.forEach(([a, b, c]) => {
-    positions.push(vertices[a].x, vertices[a].y, vertices[a].z);
-    positions.push(vertices[b].x, vertices[b].y, vertices[b].z);
-    positions.push(vertices[c].x, vertices[c].y, vertices[c].z);
-  });
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geo.computeVertexNormals();
-
-  const mat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(colorHex),
-    roughness: 0.5,
-    metalness: 0.05,
-    flatShading,
-    side: THREE.DoubleSide,
-  });
-
-  return new THREE.Mesh(geo, mat);
-}
 
 /**
  * Generate 3D Three.js Group for a high-fidelity hand model with banded phalanx pipes,
@@ -321,7 +290,9 @@ export function generateHandMeshGroup(
   const group = new THREE.Group();
   group.name = `Hand_${handData.handIndex + 1}_${handData.handedness}`;
 
-  const rawLandmarks = handData.landmarks;
+  const rawLandmarks = handData.worldLandmarks && handData.worldLandmarks.length >= 21
+    ? handData.worldLandmarks
+    : handData.landmarks;
   if (!rawLandmarks || rawLandmarks.length < 21) return group;
 
   // Center landmarks if requested
@@ -337,46 +308,39 @@ export function generateHandMeshGroup(
   // Consistent Dorsal Normal calculation invariant to handedness & flexion curl
   const palmNormal = getConsistentDorsalNormal(landmarks);
 
-  // Base dimensions scale
+  // Dynamic reference length based on hand scale (Wrist 0 to Middle MCP 9)
   const wristPt = landmarks[0];
-  const p5 = landmarks[5];
-  const p17 = landmarks[17];
-  const palmSpan = p5.distanceTo(p17);
-  const baseDim = Math.max(2.5, palmSpan);
-  const baseBoneWidth = baseDim * FINGER_BONE_BASE_WIDTH;
-  const sphereRadius = baseDim * JOINT_BASE_WIDTH;
+  const middleMcp = landmarks[9];
+  const handScale = wristPt && middleMcp ? wristPt.distanceTo(middleMcp) : 4.2;
+
+  // Pure proportional scaling directly from hand feature scale (no absolute picture-dependent clamps)
+  const wristThickness = handScale * 0.28;
+  const knuckleThickness = wristThickness * 0.55;
+  const sphereRadius = handScale * 0.045;
+  const baseBoneWidth = handScale * 0.085;
 
   const flatShading = options.shadingStyle === 'Faceted / Flat-Shaded';
 
-  // 1. Volumetric Palm Block, Thenar/Hypothenar Wedges & Slim Tendon Ridges
+  // 1. Volumetric Palm Block, Thenar/Hypothenar Wedges & Slim Tendon Ridges (using ConvexGeometry matching Python trimesh.convex.convex_hull)
   if (options.showPlanes) {
-    const wristThickness = baseDim * 0.16;
-    const knuckleThickness = wristThickness * 0.55;
-
-    // A. Main Palm Block (Wrist 0, MCPs 5, 9, 13, 17)
+    // A. Main Palm Block (Wrist 0, MCPs 5, 9, 13, 17) via Convex Hull
     const mcpIndices = [0, 5, 9, 13, 17];
     const mPts = mcpIndices.map((idx) => landmarks[idx]);
 
     const topPts = mPts.map((pt) => pt.clone().add(palmNormal.clone().multiplyScalar(knuckleThickness * 0.45)));
     const botPts = mPts.map((pt) => pt.clone().sub(palmNormal.clone().multiplyScalar(knuckleThickness * 0.70)));
-    // Deepen carpal canal at wrist
-    botPts[0].sub(palmNormal.clone().multiplyScalar(wristThickness * 0.3));
+    botPts[0].sub(palmNormal.clone().multiplyScalar(wristThickness * 0.30));
 
-    const mainVerts = [...topPts, ...botPts];
-    const mainFaces = [
-      // Top Cap
-      [0, 1, 2], [0, 2, 3], [0, 3, 4],
-      // Bottom Cap
-      [5, 7, 6], [5, 8, 7], [5, 9, 8],
-      // Sides around border
-      [0, 5, 6], [0, 6, 1],
-      [1, 6, 7], [1, 7, 2],
-      [2, 7, 8], [2, 8, 3],
-      [3, 8, 9], [3, 9, 4],
-      [4, 9, 5], [4, 5, 0],
-    ];
-
-    const palmMesh = createPolyhedronMesh(mainVerts, mainFaces, options.planeColor, flatShading);
+    const palmGeo = new ConvexGeometry([...topPts, ...botPts]);
+    palmGeo.computeVertexNormals();
+    const palmMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(options.planeColor),
+      roughness: 0.5,
+      metalness: 0.05,
+      flatShading,
+      side: THREE.DoubleSide,
+    });
+    const palmMesh = new THREE.Mesh(palmGeo, palmMat);
     group.add(palmMesh);
 
     // B. Slim Crisp Tendon Ridges (Sitting on dorsal deck)
@@ -398,7 +362,7 @@ export function generateHandMeshGroup(
       }
     });
 
-    // C. Thenar Muscle Wedge (Wrist 0, CMC 1, MCP 2, Index MCP 5)
+    // C. Thenar Muscle Wedge (Wrist 0, CMC 1, MCP 2, Index MCP 5) via Convex Hull
     const thenarIndices = [0, 1, 2, 5];
     const thenarPts = thenarIndices.map((idx) => landmarks[idx]);
 
@@ -423,21 +387,21 @@ export function generateHandMeshGroup(
         .add(thumbOutward.clone().multiplyScalar(knuckleThickness * 0.25))
     );
 
-    const thenarVerts = [...tTop, ...tBot];
-    const thenarFaces = [
-      [0, 1, 2], [0, 2, 3],
-      [4, 6, 5], [4, 7, 6],
-      [0, 4, 5], [0, 5, 1],
-      [1, 5, 6], [1, 6, 2],
-      [2, 6, 7], [2, 7, 3],
-      [3, 7, 4], [3, 4, 0],
-    ];
-
-    const thenarMesh = createPolyhedronMesh(thenarVerts, thenarFaces, options.thenarColor, flatShading);
+    const thenarGeo = new ConvexGeometry([...tTop, ...tBot]);
+    thenarGeo.computeVertexNormals();
+    const thenarMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(options.thenarColor),
+      roughness: 0.5,
+      metalness: 0.05,
+      flatShading,
+      side: THREE.DoubleSide,
+    });
+    const thenarMesh = new THREE.Mesh(thenarGeo, thenarMat);
     group.add(thenarMesh);
 
-    // D. Hypothenar Muscle Cushion (Pinky Heel)
+    // D. Hypothenar Muscle Cushion (Pinky Heel) via Convex Hull
     const hypoMid = landmarks[0].clone().add(landmarks[17]).multiplyScalar(0.5);
+
     let lateralDir = landmarks[17].clone().sub(landmarks[5]);
     if (lateralDir.lengthSq() > 1e-8) {
       lateralDir.normalize();
@@ -453,15 +417,16 @@ export function generateHandMeshGroup(
       .add(lateralDir.clone().multiplyScalar(knuckleThickness * 0.30))
       .sub(palmNormal.clone().multiplyScalar(wristThickness * 0.50));
 
-    const hypoVerts = [...hypoTop, hypoBulge];
-    const hypoFaces = [
-      [0, 1, 2],
-      [0, 2, 3],
-      [1, 3, 2],
-      [0, 3, 1],
-    ];
-
-    const hypoMesh = createPolyhedronMesh(hypoVerts, hypoFaces, options.thenarColor, flatShading);
+    const hypoGeo = new ConvexGeometry([...hypoTop, hypoBulge]);
+    hypoGeo.computeVertexNormals();
+    const hypoMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(options.thenarColor),
+      roughness: 0.5,
+      metalness: 0.05,
+      flatShading,
+      side: THREE.DoubleSide,
+    });
+    const hypoMesh = new THREE.Mesh(hypoGeo, hypoMat);
     group.add(hypoMesh);
   }
 
@@ -481,26 +446,24 @@ export function generateHandMeshGroup(
       flatShading,
     });
 
-    const sphereGeo = new THREE.IcosahedronGeometry(sphereRadius, 2);
-
     landmarks.forEach((pt, idx) => {
-      let rScale = 0.95;
+      let r = 0;
       let mat = baseJointMat;
 
       if (idx === 0) {
-        rScale = 1.3;
+        r = sphereRadius * 1.3;
       } else if (MCP_JOINTS.has(idx)) {
-        rScale = 1.15;
+        r = sphereRadius * 1.15;
         mat = mcpJointMat;
       } else if (IP_JOINTS.has(idx)) {
-        rScale = 0.95;
+        r = sphereRadius * 0.95;
       } else {
         return;
       }
 
+      const sphereGeo = new THREE.IcosahedronGeometry(r, 2);
       const sphereMesh = new THREE.Mesh(sphereGeo, mat);
       sphereMesh.position.copy(pt);
-      sphereMesh.scale.setScalar(rScale);
       group.add(sphereMesh);
     });
   }
@@ -511,6 +474,9 @@ export function generateHandMeshGroup(
       const p1 = landmarks[startIdx];
       const p2 = landmarks[endIdx];
       if (!p1 || !p2) return;
+
+      const vec = p2.clone().sub(p1);
+      if (vec.length() < 1e-4) return;
 
       const wStart = baseBoneWidth * sScale;
       const hStart = baseBoneWidth * 0.95 * sScale;

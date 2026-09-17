@@ -120,15 +120,14 @@ export async function extractHandLandmarksFromImage(
       return null;
     }
 
-    const w = imageSource.width || 500;
-    const h = imageSource.height || 500;
-    const maxDim = Math.max(h, w);
+    const w = (imageSource as HTMLImageElement).naturalWidth || imageSource.width || 500;
+    const h = (imageSource as HTMLImageElement).naturalHeight || imageSource.height || 500;
 
+    const numDetected = result.landmarks.length;
     const handsData: HandLandmarkData[] = [];
 
-    for (let i = 0; i < result.landmarks.length; i++) {
+    for (let i = 0; i < numDetected; i++) {
       const rawLandmarks = result.landmarks[i];
-      const rawWorldLandmarks = result.worldLandmarks ? result.worldLandmarks[i] : null;
 
       let handedness: 'Left' | 'Right' | 'Unknown' = 'Unknown';
       let score = 1.0;
@@ -139,25 +138,16 @@ export async function extractHandLandmarksFromImage(
         score = cat.score ?? 1.0;
       }
 
-      // Convert 2D image landmarks to 3D scene coordinates
-      const landmarks: THREE.Vector3[] = rawLandmarks.map((lm) => {
-        const x = ((lm.x - 0.5) * w) / (maxDim * 0.1);
-        const y = -((lm.y - 0.5) * h) / (maxDim * 0.1);
-        const z = (-lm.z * w) / (maxDim * 0.1);
-        return new THREE.Vector3(x, y, z);
-      });
-
-      // Convert world 3D landmarks (in meters) to scaled 3D scene coordinates
-      const worldLandmarks: THREE.Vector3[] = rawWorldLandmarks
-        ? rawWorldLandmarks.map((wlm) => new THREE.Vector3(wlm.x * 25, -wlm.y * 25, -wlm.z * 25))
-        : landmarks;
+      // Calculate coordinates directly based on image width and height matching Python:
+      // coords = np.array([[lm.x * w, -lm.y * h, -lm.z * w] for lm in landmarks])
+      const coords = rawLandmarks.map((lm) => new THREE.Vector3(lm.x * w, -lm.y * h, -lm.z * w));
 
       handsData.push({
         handIndex: i,
         handedness,
         score,
-        landmarks,
-        worldLandmarks,
+        landmarks: coords,
+        worldLandmarks: coords,
       });
     }
 
