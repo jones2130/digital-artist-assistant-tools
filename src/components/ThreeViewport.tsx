@@ -41,7 +41,7 @@ export const ThreeViewport: React.FC<ThreeViewportProps> = ({
     sceneRef.current = scene;
 
     // Camera
-    const camera = new THREE.PerspectiveCamera(45, width / h, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(45, width / h, 0.1, 50000);
     camera.position.set(0, 0.5, 20);
     cameraRef.current = camera;
 
@@ -167,6 +167,10 @@ export const ThreeViewport: React.FC<ThreeViewportProps> = ({
         const fov = cameraRef.current.fov * (Math.PI / 180);
         let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 1.8;
         cameraZ = Math.max(cameraZ, 5);
+
+        cameraRef.current.near = Math.max(0.1, cameraZ / 500);
+        cameraRef.current.far = Math.max(50000, cameraZ * 10);
+        cameraRef.current.updateProjectionMatrix();
 
         cameraRef.current.position.set(center.x, center.y + size.y * 0.1, center.z + cameraZ);
         cameraRef.current.lookAt(center);
