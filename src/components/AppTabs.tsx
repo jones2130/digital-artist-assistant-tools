@@ -25,7 +25,7 @@ export const AppTabs: React.FC<AppTabsProps> = ({ basePath = '' }) => {
               : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
           }`}
         >
-          <Camera className="w-4 h-4" /> 📸 Photo to 3D Loomis Studio
+          📸 Photo to 3D Loomis Studio
         </button>
 
         <button
@@ -37,7 +37,7 @@ export const AppTabs: React.FC<AppTabsProps> = ({ basePath = '' }) => {
               : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
           }`}
         >
-          <Hand className="w-4 h-4" /> 🖐️ Photo to 3D Hand Studio
+          🖐️ Photo to 3D Hand Studio
         </button>
 
         <button
@@ -49,7 +49,7 @@ export const AppTabs: React.FC<AppTabsProps> = ({ basePath = '' }) => {
               : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
           }`}
         >
-          <Box className="w-4 h-4" /> 🔮 3D Primative Generator
+          🔮 3D Primative Generator
         </button>
 
         <button
@@ -61,7 +61,7 @@ export const AppTabs: React.FC<AppTabsProps> = ({ basePath = '' }) => {
               : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
           }`}
         >
-          <Search className="w-4 h-4" /> 📂 Model Viewer & Inspector
+          📂 Model Viewer & Inspector
         </button>
       </div>
 
