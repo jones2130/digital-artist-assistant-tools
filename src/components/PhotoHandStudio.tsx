@@ -388,7 +388,7 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
                 onChange={(e) => setShowBones(e.target.checked)}
                 className="accent-sky-400 rounded"
               />
-              Tapered Tendon Blocks
+              Faceted Phalanges & Chisel Tips
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -397,7 +397,7 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
                 onChange={(e) => setShowRings(e.target.checked)}
                 className="accent-cyan-400 rounded"
               />
-              Foreshortening Torus Rings
+              Pipe Divisions & Facet Bands
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -448,7 +448,7 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
               />
             </div>
             <div className="flex flex-col gap-1">
-              <span>Foreshortening Rings</span>
+              <span>Facet Band Color</span>
               <input
                 type="color"
                 value={ringColor}
@@ -457,7 +457,7 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
               />
             </div>
             <div className="flex flex-col gap-1">
-              <span>Tendon Blocks</span>
+              <span>Phalanx Bone Color</span>
               <input
                 type="color"
                 value={boneColor}
