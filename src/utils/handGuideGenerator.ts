@@ -6,7 +6,6 @@ export interface HandStyleOptions {
   showBones: boolean; // Tapered Faceted Phalanges with Chisel Tips
   showRings: boolean; // Banded Division Rings along Finger Pipes
   showPlanes: boolean; // Volumetric Palm Block, Wedges & Dorsal Tendon Ridges
-  showWireframe: boolean;
   showLabels: boolean;
   jointColor: string;
   mcpColor: string;
@@ -14,7 +13,6 @@ export interface HandStyleOptions {
   ringColor: string; // Facet band color
   planeColor: string; // Palm main color
   thenarColor: string; // Thenar muscle color
-  wireframeColor: string;
   shadingStyle: 'Faceted / Flat-Shaded' | 'Smooth-Shaded';
 }
 
@@ -536,28 +534,7 @@ export function generateHandMeshGroup(
     });
   }
 
-  // 4. Wireframe Skeleton Overlay
-  if (options.showWireframe) {
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(options.wireframeColor),
-      wireframe: true,
-    });
-
-    const wireGroup = new THREE.Group();
-    FINGER_CONNECTIONS_FACETED.forEach(([startIdx, endIdx]) => {
-      const pStart = landmarks[startIdx];
-      const pEnd = landmarks[endIdx];
-      if (!pStart || !pEnd) return;
-
-      const lineGeo = new THREE.BufferGeometry().setFromPoints([pStart, pEnd]);
-      const line = new THREE.Line(lineGeo, wireMat);
-      wireGroup.add(line);
-    });
-
-    group.add(wireGroup);
-  }
-
-  // 5. Handedness Badge / Label
+  // 4. Handedness Badge / Label
   if (options.showLabels) {
     const wrist = landmarks[0];
     const middleTip = landmarks[12];

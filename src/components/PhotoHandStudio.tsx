@@ -47,7 +47,6 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
   const [showBones, setShowBones] = useState<boolean>(true); // Bridgman tapered blocks
   const [showRings, setShowRings] = useState<boolean>(true); // Foreshortening Torus Rings
   const [showPlanes, setShowPlanes] = useState<boolean>(true); // Volumetric Palm Block & Thenar Wedge
-  const [showWireframe, setShowWireframe] = useState<boolean>(false);
   const [showLabels, setShowLabels] = useState<boolean>(false);
 
   const [jointColor, setJointColor] = useState<string>('#facc15'); // Finger joints (yellow)
@@ -56,7 +55,6 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
   const [ringColor, setRingColor] = useState<string>('#06b6d4'); // Foreshortening rings (cyan)
   const [planeColor, setPlaneColor] = useState<string>('#f4e6d3'); // Palm block (skin tone)
   const [thenarColor, setThenarColor] = useState<string>('#e2e8f0'); // Thenar muscle wedge
-  const [wireframeColor, setWireframeColor] = useState<string>('#4ade80');
   const [shadingStyle, setShadingStyle] = useState<'Faceted / Flat-Shaded' | 'Smooth-Shaded'>(
     'Faceted / Flat-Shaded'
   );
@@ -139,7 +137,6 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
       showBones,
       showRings,
       showPlanes,
-      showWireframe,
       showLabels,
       jointColor,
       mcpColor,
@@ -147,7 +144,6 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
       ringColor,
       planeColor,
       thenarColor,
-      wireframeColor,
       shadingStyle,
     };
 
@@ -179,7 +175,6 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
     showBones,
     showRings,
     showPlanes,
-    showWireframe,
     showLabels,
     jointColor,
     mcpColor,
@@ -187,7 +182,6 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
     ringColor,
     planeColor,
     thenarColor,
-    wireframeColor,
     shadingStyle,
   ]);
 
@@ -407,15 +401,6 @@ export const PhotoHandStudio: React.FC<PhotoHandStudioProps> = ({ basePath = '' 
                 className="accent-purple-400 rounded"
               />
               Palm & Thenar Blocks
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showWireframe}
-                onChange={(e) => setShowWireframe(e.target.checked)}
-                className="accent-emerald-400 rounded"
-              />
-              Wireframe Overlay
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
