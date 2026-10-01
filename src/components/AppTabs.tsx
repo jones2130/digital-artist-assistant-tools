@@ -3,6 +3,7 @@ import { PhotoHeadStudio } from './PhotoHeadStudio';
 import { PhotoHandStudio } from './PhotoHandStudio';
 import { ProceduralGenerator } from './ProceduralGenerator';
 import { ModelInspector } from './ModelInspector';
+import { PaletteStudio } from './PaletteStudio';
 import { Camera, Hand, Box, Search } from 'lucide-react';
 
 interface AppTabsProps {
@@ -10,7 +11,7 @@ interface AppTabsProps {
 }
 
 export const AppTabs: React.FC<AppTabsProps> = ({ basePath = '' }) => {
-  const [activeTab, setActiveTab] = useState<'loomis' | 'hand' | 'procedural' | 'inspector'>('loomis');
+  const [activeTab, setActiveTab] = useState<'loomis' | 'hand' | 'procedural' | 'inspector' | 'palette'>('loomis');
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,6 +43,18 @@ export const AppTabs: React.FC<AppTabsProps> = ({ basePath = '' }) => {
 
         <button
           type="button"
+          onClick={() => setActiveTab('palette')}
+          className={`w-full md:w-auto flex items-center justify-center md:justify-start gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all border ${
+            activeTab === 'palette'
+              ? 'bg-amber-500/10 border-amber-500 text-amber-400 shadow-lg shadow-amber-950/40'
+              : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+          }`}
+        >
+          🎨 Pigment & Palette Studio
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('procedural')}
           className={`w-full md:w-auto flex items-center justify-center md:justify-start gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all border ${
             activeTab === 'procedural'
@@ -68,6 +81,7 @@ export const AppTabs: React.FC<AppTabsProps> = ({ basePath = '' }) => {
       {/* Tab Contents */}
       {activeTab === 'loomis' && <PhotoHeadStudio basePath={basePath} />}
       {activeTab === 'hand' && <PhotoHandStudio basePath={basePath} />}
+      {activeTab === 'palette' && <PaletteStudio />}
       {activeTab === 'procedural' && <ProceduralGenerator />}
       {activeTab === 'inspector' && <ModelInspector />}
     </div>
