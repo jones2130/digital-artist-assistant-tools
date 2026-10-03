@@ -4,11 +4,11 @@ import tailwindcss from '@tailwindcss/vite';
 
 // Automatically detect GitHub Pages repo name if building in GitHub Actions or env
 const getBasePath = () => {
-  if (process.env.BASE_PATH) return process.env.BASE_PATH;
-  if (process.env.GITHUB_REPOSITORY) {
-    const repoName = process.env.GITHUB_REPOSITORY.split('/')[1];
-    return `/${repoName}`;
-  }
+  // if (process.env.BASE_PATH) return process.env.BASE_PATH;
+  // if (process.env.GITHUB_REPOSITORY) {
+  //   const repoName = process.env.GITHUB_REPOSITORY.split('/')[1];
+  //   return `/${repoName}`;
+  // }
   return '/';
 };
 
