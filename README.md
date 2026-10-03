@@ -26,6 +26,12 @@ Runs 100% in the browser via WebGL and WebAssembly (WASM), making it completely 
 - Drag-and-drop 3D file viewer supporting `.obj`, `.stl`, `.glb`, `.gltf`, and `.ply` files.
 - Client-side 3D model exporters for **GLB / GLTF**, **OBJ**, and **STL** binary downloads.
 
+### 📱 4. Progressive Web App (PWA) & Offline Mode
+- **Installable Native App:** Install directly to your desktop (Chrome/Edge/macOS) or home screen (iOS/Android) via the "📥 Install App" button or browser prompt.
+- **Offline Capable:** Caches application shell, 3D meshes, and MediaPipe ML models so you can use the studio in the field without internet.
+- **App Shortcuts:** Jump directly to specific studios (Loomis Head, Hand Poser, Palette Mixer, 3D Primitives) from your OS app launcher.
+- **Offline Indicator:** Live network badge informs you when working in offline cached mode.
+
 ---
 
 ## 🛠️ Prerequisites

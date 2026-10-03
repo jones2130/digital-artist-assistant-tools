@@ -11,30 +11,67 @@ const faviconUrl = `${basePath}favicon.svg`;
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href={faviconUrl} />
+    <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}icons/icon-32x32.png`} />
+    <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}icons/icon-16x16.png`} />
+    <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}icons/apple-touch-icon.png`} />
+    <link rel="manifest" href={`${basePath}manifest.webmanifest`} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="3D Reference" />
+    <meta name="description" content="Interactive 3D reference studio, Loomis head fitting, hand poser, digital pigment palette mixer, and procedural geometry generator." />
     <meta name="generator" content={Astro.generator} />
     <title>🎨 3D Studio & Artist Reference Generator</title>
   </head>
-  <body class="bg-slate-950 text-slate-100 min-h-screen">
+  <body class="bg-slate-950 text-slate-100 min-h-screen" data-base-path={basePath}>
     <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col gap-6">
       {/* Header */}
       <header class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-0">
-          <img class="logo mx-auto md:mx-0 md:mr-10" src="images/logo-dark.svg" alt="Hands On Art Studio Logo">
-          <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-purple-300 to-amber-300">
-            🎨 3D Artist Reference Generator
-          </h1>
+          <a href="https://www.handsonart.studio" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4">
+            <img class="logo mx-auto md:mx-0 md:mr-10" src={`${basePath}images/logo-dark.svg`} alt="Hands On Art Studio Logo">
+          </a>
+          <div>
+            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-purple-300 to-amber-300">
+              🎨 3D Artist Reference Generator
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Digital studio tools for artists &amp; illustrators</p>
+          </div>
         </div>
 
-        <a 
-          href="https://ko-fi.com/handsonartstudio" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          class="kofi-header-btn"
-        >
-          <span class="cup-icon">☕</span>
-          <span>Fuel the Dev on Ko-fi</span>
-        </a>
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- PWA Install Button -->
+          <button
+            id="pwa-install-btn"
+            class="hidden items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 hover:from-sky-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-sky-950/40 border border-sky-400/30 transition-all cursor-pointer"
+            title="Install as Progressive Web App"
+          >
+            <span class="text-sm">📥</span>
+            <span>Install App</span>
+          </button>
+
+          <!-- Offline Mode Indicator -->
+          <span
+            id="offline-badge"
+            class="hidden items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs rounded-xl font-medium"
+            title="Running in offline mode with cached studio tools"
+          >
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span>Offline</span>
+          </span>
+
+          <a 
+            href="https://ko-fi.com/handsonartstudio" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="kofi-header-btn"
+          >
+            <span class="cup-icon">☕</span>
+            <span>Fuel the Dev on Ko-fi</span>
+          </a>
+        </div>
       </header>
 
       {/* Main Interactive App */}
@@ -154,6 +191,87 @@ const faviconUrl = `${basePath}favicon.svg`;
         document.addEventListener('DOMContentLoaded', setupModal);
       } else {
         setupModal();
+      }
+
+      // --- Progressive Web App (PWA) Logic ---
+      const basePath = document.body.dataset.basePath || '/';
+      let deferredPrompt: any = null;
+      const installBtn = document.getElementById('pwa-install-btn');
+      const offlineBadge = document.getElementById('offline-badge');
+
+      // Check if running as installed standalone PWA
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                           (window.navigator as any).standalone === true;
+
+      // Handle install prompt
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn && !isStandalone) {
+          installBtn.classList.remove('hidden');
+          installBtn.classList.add('flex');
+        }
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installBtn.classList.add('hidden');
+            installBtn.classList.remove('flex');
+          }
+          deferredPrompt = null;
+        });
+      }
+
+      window.addEventListener('appinstalled', () => {
+        if (installBtn) {
+          installBtn.classList.add('hidden');
+          installBtn.classList.remove('flex');
+        }
+        deferredPrompt = null;
+        console.log('[PWA] 3D Artist Reference Studio was installed successfully.');
+      });
+
+      // Handle offline/online status indicators
+      function updateNetworkStatus() {
+        if (!navigator.onLine) {
+          offlineBadge?.classList.remove('hidden');
+          offlineBadge?.classList.add('flex');
+        } else {
+          offlineBadge?.classList.add('hidden');
+          offlineBadge?.classList.remove('flex');
+        }
+      }
+      window.addEventListener('online', updateNetworkStatus);
+      window.addEventListener('offline', updateNetworkStatus);
+      updateNetworkStatus();
+
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          const swUrl = `${basePath}sw.js`.replace(/\/+/g, '/');
+          navigator.serviceWorker
+            .register(swUrl, { scope: basePath })
+            .then((registration) => {
+              console.log('[PWA] Service Worker registered with scope:', registration.scope);
+              registration.addEventListener('updatefound', () => {
+                const installingWorker = registration.installing;
+                if (installingWorker) {
+                  installingWorker.addEventListener('statechange', () => {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      console.log('[PWA] New version ready! Content updated in background.');
+                    }
+                  });
+                }
+              });
+            })
+            .catch((err) => {
+              console.warn('[PWA] Service Worker registration failed:', err);
+            });
+        });
       }
     </script>
   </body>
