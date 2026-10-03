@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "id": "?pwa=1",
+  "name": "3D Artist Reference Studio & Generator",
+  "short_name": "3D Reference",
+  "description": "Interactive client-side 3D reference studio, Loomis head fitting, hand poser, digital pigment palette mixer, and procedural geometry generator.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "categories": [
+    "graphics",
+    "productivity",
+    "utilities",
+    "design"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "📸 Photo to 3D Loomis Studio",
+      "short_name": "Head Studio",
+      "description": "Fit 3D Loomis cranial ball and structural planar guides to portrait photos",
+      "url": "./#loomis",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "🖐️ Photo to 3D Hand Studio",
+      "short_name": "Hand Studio",
+      "description": "Extract 3D hand skeletal poses and lighting from photos",
+      "url": "./#hand",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "🎨 Pigment & Palette Studio",
+      "short_name": "Palette Studio",
+      "description": "Realistic pigment mixing and watercolor swatches",
+      "url": "./#palette",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "🔮 3D Primitive Generator",
+      "short_name": "3D Primitives",
+      "description": "Generate parametric 3D meshes and export GLB/OBJ/STL",
+      "url": "./#procedural",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "📂 3D Model Inspector",
+      "short_name": "Model Inspector",
+      "description": "Inspect and convert 3D model files (OBJ, STL, GLB, PLY)",
+      "url": "./#inspector",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
